@@ -8,6 +8,9 @@ pipeline {
         disableConcurrentBuilds()
         ansiColor('xterm')
     }
+    parameters {
+        choice(name: 'action', choices: ['Apply', 'Destroy'], description: 'Pick something')
+    }
     stages {
         stage('Init') {
             steps {
@@ -18,6 +21,11 @@ pipeline {
             }
         }
         stage('Plan') {   
+            when {
+                expression {
+                    params.action == 'Apply'
+                }
+            }
             steps {
                 sh """
                  cd 01-vpc
@@ -26,10 +34,15 @@ pipeline {
             }
         }
         stage('Deploy') {
-            input {
-                message "Should we continue?"
-                ok "Yes, we should."
-             } 
+            // input {
+            //     message "Should we continue?"
+            //     ok "Yes, we should."
+            //  } 
+            when {
+                expression {
+                    params.action == 'Apply'
+                }
+            }
             steps {
                 sh """
                  cd 01-vpc
@@ -38,6 +51,11 @@ pipeline {
             }
         }
         stage('Destroy') {
+            when {
+                expression {
+                    params.action == 'Destroy'
+                }
+            }
             steps {
                 sh """
                  cd 01-vpc
